@@ -65,7 +65,7 @@ namespace {
     const char *InstallFileList[] = {"textures/InstallTime1.tex", "textures/InstallTime2.tex"};
     const char *FastFollowFileList[] = {"textures/FastFollow1.tex", "textures/FastFollow2.tex"};
     const char *OnDemandFileList[] = {"textures/OnDemand1.tex", "textures/OnDemand2.tex",
-                                      "textures/OnDemand3.tex", "textures/OnDemand4.tex",};
+                                      "textures/OnDemand3.tex", "textures/OnDemand4.tex"};
 
     const AssetPackDefinition AssetPacks[] = {
             {
@@ -361,6 +361,22 @@ void GameAssetManagerInternals::SetAssetPackInitialStatus(AssetPackInfo &info) {
     }
 }
 
+// New asset pack support functions
+bool GameAssetManagerInternals::RequestAssetPackDownload(const char *assetPackName) {
+    LOGD("GameAssetManager: RequestAssetPackDownload %s", assetPackName);
+    AssetPackErrorCode assetPackErrorCode = AssetPackManager_requestDownload(&assetPackName, 1);
+    bool success = (assetPackErrorCode == ASSET_PACK_NO_ERROR);
+
+    if (success) {
+        ChangeAssetPackStatus(GetAssetPackByName(assetPackName),
+                              GameAssetManager::GAMEASSET_DOWNLOADING);
+    } else {
+        SetAssetPackErrorStatus(assetPackErrorCode, GetAssetPackByName(assetPackName),
+                                "GameAssetManager: requestDownload");
+    }
+    return success;
+}
+
 void GameAssetManagerInternals::RequestAssetPackCancelDownload(const char *assetPackName) {
     LOGD("GameAssetManager: RequestAssetPackCancelDownload %s", assetPackName);
     // Request cancellation of the download, this is a request, it is not guaranteed
@@ -581,25 +597,6 @@ void GameAssetManagerInternals::UpdateMobileDataRequestStatus() {
     }
 }
 
-
-
-// New asset pack support functions
-bool GameAssetManagerInternals::RequestAssetPackDownload(const char *assetPackName) {
-    LOGD("GameAssetManager: RequestAssetPackDownload %s", assetPackName);
-    AssetPackErrorCode assetPackErrorCode = AssetPackManager_requestDownload(&assetPackName, 1);
-    bool success = (assetPackErrorCode == ASSET_PACK_NO_ERROR);
-
-    if (success) {
-        ChangeAssetPackStatus(GetAssetPackByName(assetPackName),
-                              GameAssetManager::GAMEASSET_DOWNLOADING);
-    } else {
-        SetAssetPackErrorStatus(assetPackErrorCode, GetAssetPackByName(assetPackName),
-                                "GameAssetManager: requestDownload");
-    }
-    return success;
-}
-
-// Main GameAssetManager class
 GameAssetManager::GameAssetManager(AAssetManager *assetManager, JavaVM *jvm,
                                    jobject android_context) {
     mInternals = new GameAssetManagerInternals(assetManager, jvm, android_context);
@@ -733,7 +730,6 @@ GameAssetManager::GetGameAssetPackFileList(const char *assetPackName, int *fileL
         return packInfo->mDefinition->mPackFiles;
     }
 
-    // Couldn't find pack, return zero files
     if (fileListSize != NULL) {
         *fileListSize = 0;
     }
