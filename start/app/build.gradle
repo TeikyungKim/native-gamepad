@@ -24,6 +24,14 @@ android {
     compileSdkVersion 29
     ndkVersion '21.2.6472646'
 
+    assetPacks = [ ":InstallPack", ":FastFollowPack", ":OnDemandPack"]
+
+    bundle {
+        texture {
+            enableSplit true
+        }
+    }
+
     defaultConfig {
         applicationId 'com.google.sample.nativepaddemo'
         minSdkVersion 18

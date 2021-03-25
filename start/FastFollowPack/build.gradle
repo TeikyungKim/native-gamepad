@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-include ':app'
-include ':InstallPack'
-include ':FastFollowPack'
-include ':OnDemandPack'
+apply plugin: 'com.android.asset-pack'
+
+assetPack {
+    packName = "FastFollowPack" // Directory name for the asset pack
+    dynamicDelivery {
+        deliveryType = "fast-follow"
+    }
+}
