@@ -16,6 +16,10 @@
 
 cmake_minimum_required(VERSION 3.6)
 
+# Add a static library called "playcore" built with the c++_static STL.
+include(${PLAYCORE_LOCATION}/playcore.cmake)
+add_playcore_static_library()
+
 # build native_app_glue as a static lib
 add_library(native_app_glue STATIC
         ${ANDROID_NDK}/sources/android/native_app_glue/android_native_app_glue.c)
@@ -58,12 +62,14 @@ add_library(game SHARED
 
 target_include_directories(game PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}
+        ${PLAYCORE_LOCATION}/include
         ${IMGUI_BASE_DIR}
         ${ANDROID_NDK}/sources/android/native_app_glue)
 
 # add lib dependencies
 target_link_libraries(game
         android
+        playcore
         imgui
         native_app_glue
         atomic

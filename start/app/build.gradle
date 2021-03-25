@@ -16,6 +16,10 @@
 
 apply plugin: 'com.android.application'
 
+// Define a path to the extracted Play Core SDK files.
+// If using a relative path, wrap it with file() since CMake requires absolute paths.
+def playcoreDir = file('../../play-core-native-sdk')
+
 android {
     compileSdkVersion 29
     ndkVersion '21.2.6472646'
@@ -28,7 +32,9 @@ android {
         versionName    '1.0'
         externalNativeBuild {
             cmake {
-                arguments '-DANDROID_STL=c++_static'
+                // Define the PLAYCORE_LOCATION directive.
+                arguments "-DANDROID_STL=c++_static",
+                        "-DPLAYCORE_LOCATION=$playcoreDir"
             }
         }
     }
@@ -36,7 +42,9 @@ android {
         release {
             minifyEnabled = false
             proguardFiles getDefaultProguardFile('proguard-android.txt'),
-                          'proguard-rules.pro'
+                    'proguard-rules.pro',
+                    '$playcoreDir/proguard/common.pgcfg',
+                    '$playcoreDir/proguard/per-feature-proguard-files'
         }
     }
     externalNativeBuild {
@@ -49,4 +57,9 @@ android {
 android.lintOptions {
         abortOnError  = false
 }
+dependencies {
+    // Use the Play Core AAR included with the SDK.
+    implementation files("$playcoreDir/playcore.aar")
+}
+
 
